@@ -7,6 +7,7 @@
     <title>Nombres Pa' Mijo</title>
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   </head>
 <body>
 
@@ -28,29 +29,14 @@
 			Combinaciones
 		</div>
 		<div class="card-body">
-			<table class="table table-striped table-hover" id="combinaciones">
+			<table class="table table-striped table-hover table-bordered" id="combinaciones">
 				<thead>
-					<th>H1</th>
-					<th>H2</th>
+					<th style="width: 10%">#</th>
+					<th>Primer Nombre</th>
+					<th>Segundo Nombre</th>
+					<th style="width: 30%">Boton</th>
 				</thead>
-				<tbody>
-					<tr>
-						<td>1</td>
-						<td>a</td>
-					</tr>
-					<tr>
-						<td>2</td>
-						<td>b</td>
-					</tr>
-					<tr>
-						<td>3</td>
-						<td>c</td>
-					</tr>
-					<tr>
-						<td>4</td>
-						<td>d</td>
-					</tr>
-				</tbody>
+				<tbody></tbody>
 			</table>
 		</div>
 	</div>
@@ -59,6 +45,7 @@
 <script type="text/javascript">
 const arrNombres = ["Dante", "Magnus", "Kurt", "Franz", "Marco", "Dominik", "Drago", "Jurgen", "Leo", "Bastian", "Ezzio", 
 	"Drakken", "Bjorn", "Anton", "Giovanni", "Luka", "Ander", "Nico", "Nicolas", "Tiago", "Bruno"];
+arrNombres.sort();
 
 class CombiUni {
 	constructor(nombre) {
@@ -85,16 +72,91 @@ class CombiDuo {
 	}
 }
 
-const combi = new CombiDuo("Juan", "Gibran");
-combi.mostrar_inversion();
+const arrCombi = [];
 
+// Agrega los primeros nombres unicos al arreglo de objetos arrCombi
+arrNombres.forEach(function(nombre, indice){
+	arrCombi[indice] = new CombiUni(nombre);
+});
+
+// Agrega las combinaciones al arreglo arrCombi
+// El total de objetos agregados es igual al total de nombres * total de nombres menos uno entre dos. n*(n-1)/2
+// Esto con el fin de evitar incluir combinaciones repetidas (en las combinaciones no importa el orden de los elementos)
+for (var i=0; i<arrNombres.length; i++) {
+	for (var j=0; j<arrNombres.length; j++) {
+		if ( j > i ) { // Esta expresion evita que se repitan los elementos
+			arrCombi.push(new CombiDuo(arrNombres[i], arrNombres[j]));
+		}
+	}
+}
+
+// console.log(arrCombi);
+// console.log(arrCombi[230].pNombre);
+
+// Muestra los nombres en el card
 stringNombres = arrNombres.join(', ');
 document.getElementById("nombres").innerHTML = stringNombres;
 
-// arrNombres.forEach(function(nombre, indice){
-// 	new CombiUni(nombre);
-// 	// console.log(nombre, indice);
-// });
+var tabla = document.getElementById("combinaciones");
+
+arrCombi.forEach(function(objeto, indice){
+	var row = tabla.insertRow(-1);
+	row.id = "tr"+indice;
+	var celda1 = row.insertCell(0);
+	var celda2 = row.insertCell(1);
+	var celda3 = row.insertCell(2);
+	var celda4 = row.insertCell(3);
+	celda1.innerHTML = indice+1+ " <button type='button' id='cambiaOrden"+indice+"' class='cambio btn btn-light bi bi-arrow-left-right'></button> ";
+
+	if (objeto instanceof CombiUni){
+		celda2.innerHTML = objeto.nombre;
+		celda3.innerHTML = " ";
+		if(objeto.activo) {
+			celda4.innerHTML = "<button type='button' id='activador"+indice+"' class='btn btn-outline-danger btn-sm'>Rechazar</button>";
+		} else {
+			celda4.innerHTML = "<button type='button' id='activador"+indice+"' class='btn btn-outline-success btn-sm'>Activar</button>";
+		}
+	}
+	if (objeto instanceof CombiDuo){
+		celda2.innerHTML = objeto.pNombre;
+		celda3.innerHTML = objeto.sNombre;
+		celda4.innerHTML = objeto.primerOrdenActivo;
+		var contCelda4 = "";
+		if(objeto.primerOrdenActivo) {
+			contCelda4 += " <button type='button' id='activador"+indice+"' class='btn btn-outline-danger btn-sm'>Rechazar Primer Orden</button>";
+		} else {
+			contCelda4 += " <button type='button' id='activador"+indice+"' class='btn btn-outline-success btn-sm'>Activar Primer Orden</button>";
+		}
+		if(objeto.segundoOrdenActivo) {
+			contCelda4 += " <button type='button' id='activador"+indice+"' class='btn btn-outline-danger btn-sm'>Rechazar Segundo Orden</button>";
+		} else {
+			contCelda4 += " <button type='button' id='activador"+indice+"' class='btn btn-outline-success btn-sm'>Activar Segundo Orden</button>";
+		}
+		celda4.innerHTML = contCelda4;
+	}
+});
+
+tabla.addEventListener('click', (event) => {
+	const isButton = event.target.nodeName === 'BUTTON';
+	if (!isButton) {
+	return;
+	}
+
+	if (event.target.classList.contains("cambio")) {
+		cambia_orden(event.target.id);
+	}
+})
+
+function cambia_orden(id) {
+	var id = id.slice(11);
+	var celda1 = document.getElementById('tr'+id).cells[1].innerHTML;
+	var celda2 = document.getElementById('tr'+id).cells[2].innerHTML;
+	var celdaTemp = "";
+	celdaTemp = document.getElementById('tr'+id).cells[1].innerHTML;
+	document.getElementById('tr'+id).cells[1].innerHTML = document.getElementById('tr'+id).cells[2].innerHTML;
+	document.getElementById('tr'+id).cells[2].innerHTML = celdaTemp;
+}
+
 </script>
 
 <!-- JS bundle de Bootstrap -->
