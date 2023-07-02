@@ -23,7 +23,30 @@
 	</div>
 </div>
 <br>
+
 <div class="container-fluid">
+	<div class="card">
+		<div class="card-body">
+			<div class="row">
+				<div class="col">
+				</div>
+				<div class="col">
+					<input type="text" id="buscador" onkeyup="filtra()" placeholder="Search for names..">
+					<div class="btn-group" role="group">
+					    <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+					    	Filtrar
+					    </button>
+					    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+					    	<li><a class="dropdown-item" href="#">Todo</a></li>
+					    	<li><a class="dropdown-item" href="#">Activos</a></li>
+					    	<li><a class="dropdown-item" href="#">Rechazados</a></li>
+					    </ul>
+					</div>
+				</div>
+				<div class="col"></div>
+			</div>
+		</div>
+	</div>
 	<div class="card">
 		<div class="card card-heading" style="background-color: #34ebc3">
 			Combinaciones
@@ -70,6 +93,9 @@ class CombiDuo {
 	mostrar_inversion() {
 		console.log(this.sNombre + " " + this.pNombre + " Vázquez Bailón");
 	}
+	rechazar_primer_orden() {
+		console.log("Rechazado");
+	}
 }
 
 const arrCombi = [];
@@ -99,6 +125,7 @@ document.getElementById("nombres").innerHTML = stringNombres;
 
 var tabla = document.getElementById("combinaciones");
 
+// Pone los nombres en la tabla
 arrCombi.forEach(function(objeto, indice){
 	var row = tabla.insertRow(-1);
 	row.id = "tr"+indice;
@@ -106,47 +133,44 @@ arrCombi.forEach(function(objeto, indice){
 	var celda2 = row.insertCell(1);
 	var celda3 = row.insertCell(2);
 	var celda4 = row.insertCell(3);
-	celda1.innerHTML = indice+1+ " <button type='button' id='cambiaOrden"+indice+"' class='cambio btn btn-light bi bi-arrow-left-right'></button> ";
 
 	if (objeto instanceof CombiUni){
+		celda1.innerHTML = indice+1;
 		celda2.innerHTML = objeto.nombre;
-		celda3.innerHTML = " ";
-		if(objeto.activo) {
-			celda4.innerHTML = "<button type='button' id='activador"+indice+"' class='btn btn-outline-danger btn-sm'>Rechazar</button>";
-		} else {
-			celda4.innerHTML = "<button type='button' id='activador"+indice+"' class='btn btn-outline-success btn-sm'>Activar</button>";
-		}
 	}
 	if (objeto instanceof CombiDuo){
+		celda1.innerHTML = indice+1+ " <button type='button' id='cambiaOrden"+indice+"' class='cambio btn btn-light bi bi-arrow-left-right'></button> ";
 		celda2.innerHTML = objeto.pNombre;
 		celda3.innerHTML = objeto.sNombre;
-		celda4.innerHTML = objeto.primerOrdenActivo;
-		var contCelda4 = "";
-		if(objeto.primerOrdenActivo) {
-			contCelda4 += " <button type='button' id='activador"+indice+"' class='btn btn-outline-danger btn-sm'>Rechazar Primer Orden</button>";
-		} else {
-			contCelda4 += " <button type='button' id='activador"+indice+"' class='btn btn-outline-success btn-sm'>Activar Primer Orden</button>";
-		}
-		if(objeto.segundoOrdenActivo) {
-			contCelda4 += " <button type='button' id='activador"+indice+"' class='btn btn-outline-danger btn-sm'>Rechazar Segundo Orden</button>";
-		} else {
-			contCelda4 += " <button type='button' id='activador"+indice+"' class='btn btn-outline-success btn-sm'>Activar Segundo Orden</button>";
-		}
-		celda4.innerHTML = contCelda4;
 	}
+
+	carga_botones(objeto, indice);
 });
 
+// Escucha los clicks a los botones de la tabla y ejecuta la funcion correspondiente al boton
 tabla.addEventListener('click', (event) => {
 	const isButton = event.target.nodeName === 'BUTTON';
 	if (!isButton) {
 	return;
 	}
-
+	// Cambia el orden de las combinaciones de dos nombres
 	if (event.target.classList.contains("cambio")) {
 		cambia_orden(event.target.id);
 	}
+	// Cambia el estatus de las combinaciones de un nombre
+	if (event.target.classList.contains("cambiaEstatusUOrden")) {
+		cambia_estatus_unico_orden(event.target.id);
+	}
+	// Cambia el estatus del primer orden de las combinaciones de dos nombres
+	if (event.target.classList.contains("cambiaEstatusPOrden")) {
+		cambia_estatus_primer_orden(event.target.id);
+	}
+	// Cambia el estatus del segundo orden de las combinaciones de dos nombres
+	if (event.target.classList.contains("cambiaEstatusSOrden")) {
+		cambia_estatus_segundo_orden(event.target.id);
+	}
 })
-
+// Cambia el orden de las combinaciones de dos nombres
 function cambia_orden(id) {
 	var id = id.slice(11);
 	var celda1 = document.getElementById('tr'+id).cells[1].innerHTML;
@@ -157,12 +181,79 @@ function cambia_orden(id) {
 	document.getElementById('tr'+id).cells[2].innerHTML = celdaTemp;
 }
 
+// Cambia el estatus de las combinaciones de un nombre
+function cambia_estatus_unico_orden(id) {
+	var id = id.slice(16);
+	arrCombi[id].activo ? arrCombi[id].activo=false : arrCombi[id].activo=true
+	carga_botones(arrCombi[id], id);
+}
+// Cambia el estatus del primer orden de las combinaciones de dos nombres
+function cambia_estatus_primer_orden(id) {
+	var id = id.slice(16);
+	arrCombi[id].primerOrdenActivo ? arrCombi[id].primerOrdenActivo=false : arrCombi[id].primerOrdenActivo=true
+	carga_botones(arrCombi[id], id);
+}
+// Cambia el estatus del segundo orden de las combinaciones de dos nombres
+function cambia_estatus_segundo_orden(id) {
+	var id = id.slice(16);
+	arrCombi[id].segundoOrdenActivo ? arrCombi[id].segundoOrdenActivo=false : arrCombi[id].segundoOrdenActivo=true
+	carga_botones(arrCombi[id], id);
+}
+
+function carga_botones(objeto, id) {
+	if (objeto instanceof CombiUni){
+		if(objeto.activo) {
+			document.getElementById('tr'+id).cells[3].innerHTML = "<button type='button' id='btnCambiaEstatus"+id+"' class='cambiaEstatusUOrden btn btn-outline-danger btn-sm'>Rechazar</button>";
+		} else {
+			document.getElementById('tr'+id).cells[3].innerHTML = "<button type='button' id='btnCambiaEstatus"+id+"' class='cambiaEstatusUOrden btn btn-outline-success btn-sm'>Activar</button>";
+		}
+	}
+
+	if (objeto instanceof CombiDuo){
+		var contCelda4 = "";
+		if(objeto.primerOrdenActivo) {
+			contCelda4 += " <button type='button' id='btnCambiaEstatus"+id+"' class='cambiaEstatusPOrden btn btn-outline-danger btn-sm'>Rechazar Primer Orden</button>";
+		} else {
+			contCelda4 += " <button type='button' id='btnCambiaEstatus"+id+"' class='cambiaEstatusPOrden btn btn-outline-success btn-sm'>Activar Primer Orden</button>";
+		}
+		if(objeto.segundoOrdenActivo) {
+			contCelda4 += " <button type='button' id='btnCambiaEstatus"+id+"' class='cambiaEstatusSOrden btn btn-outline-danger btn-sm'>Rechazar Segundo Orden</button>";
+		} else {
+			contCelda4 += " <button type='button' id='btnCambiaEstatus"+id+"' class='cambiaEstatusSOrden btn btn-outline-success btn-sm'>Activar Segundo Orden</button>";
+		}
+		document.getElementById('tr'+id).cells[3].innerHTML = contCelda4;
+	}
+}
+
+function filtra() {
+	// Declare variables
+	var input, filtro, table, tr, td, i, txtValue;
+	input = document.getElementById("buscador");
+	filtro = input.value.toUpperCase();
+	table = document.getElementById("combinaciones");
+	tr = table.getElementsByTagName("tr");
+	console.log(table);
+
+	// Loop through all table rows, and hide those who don't match the search query
+	for (i = 0; i < tr.length; i++) {
+		td = tr[i].getElementsByTagName("td")[1];
+		if (td) {
+			txtValue = td.textContent || td.innerText;
+			if (txtValue.toUpperCase().indexOf(filtro) > -1) {
+				tr[i].style.display = "";
+			} else {
+				tr[i].style.display = "none";
+			}
+		}
+	}
+}
+
 </script>
 
 <!-- JS bundle de Bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js" integrity="sha384-fbbOQedDUMZZ5KreZpsbe1LCZPVmfTnH7ois6mU1QK+m14rQ1l2bGBq41eYeM/fS" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
 
 </body>
 </html>
