@@ -33,13 +33,13 @@
 				<div class="col">
 					<input type="text" id="buscador" onkeyup="filtra()" placeholder="Search for names..">
 					<div class="btn-group" role="group">
-					    <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+					    <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
 					    	Filtrar
 					    </button>
 					    <ul class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-					    	<li><a class="dropdown-item" href="#">Todo</a></li>
-					    	<li><a class="dropdown-item" href="#">Activos</a></li>
-					    	<li><a class="dropdown-item" href="#">Rechazados</a></li>
+					    	<li><a class="dropdown-item" href="#" id="filtraTodo">Todo</a></li>
+					    	<li><a class="dropdown-item" href="#" id="filtraActivos">Activos</a></li>
+					    	<li><a class="dropdown-item" href="#" id="filtraRechazados">Rechazados</a></li>
 					    </ul>
 					</div>
 				</div>
@@ -69,6 +69,7 @@
 const arrNombres = ["Dante", "Magnus", "Kurt", "Franz", "Marco", "Dominik", "Drago", "Jurgen", "Leo", "Bastian", "Ezzio", 
 	"Drakken", "Bjorn", "Anton", "Giovanni", "Luka", "Ander", "Nico", "Nicolas", "Tiago", "Bruno"];
 arrNombres.sort();
+var filtroEstado = "todo";
 
 class CombiUni {
 	constructor(nombre) {
@@ -186,18 +187,43 @@ function cambia_estatus_unico_orden(id) {
 	var id = id.slice(16);
 	arrCombi[id].activo ? arrCombi[id].activo=false : arrCombi[id].activo=true
 	carga_botones(arrCombi[id], id);
+
+	if ( arrCombi[id].activo == false ) {
+		document.getElementById("tr"+id).classList.add('table-danger');
+	} else {
+		if ( document.getElementById("tr"+id).classList.contains("table-danger") ) {
+			document.getElementById("tr"+id).classList.remove("table-danger");
+		}
+	}
 }
 // Cambia el estatus del primer orden de las combinaciones de dos nombres
 function cambia_estatus_primer_orden(id) {
 	var id = id.slice(16);
 	arrCombi[id].primerOrdenActivo ? arrCombi[id].primerOrdenActivo=false : arrCombi[id].primerOrdenActivo=true
 	carga_botones(arrCombi[id], id);
+
+	if (arrCombi[id].primerOrdenActivo == false && arrCombi[id].segundoOrdenActivo == false ) {
+		document.getElementById("tr"+id).classList.add("table-danger");
+	} else {
+		if (document.getElementById("tr"+id).classList.contains("table-danger")) {
+			document.getElementById("tr"+id).classList.remove("table-danger");
+		}
+	}
 }
 // Cambia el estatus del segundo orden de las combinaciones de dos nombres
 function cambia_estatus_segundo_orden(id) {
 	var id = id.slice(16);
 	arrCombi[id].segundoOrdenActivo ? arrCombi[id].segundoOrdenActivo=false : arrCombi[id].segundoOrdenActivo=true
 	carga_botones(arrCombi[id], id);
+	console.log(document.getElementById("tr"+id));
+
+	if (arrCombi[id].primerOrdenActivo == false && arrCombi[id].segundoOrdenActivo == false ) {
+		document.getElementById("tr"+id).classList.add("table-danger");
+	} else {
+		if (document.getElementById("tr"+id).classList.contains("table-danger")) {
+			document.getElementById("tr"+id).classList.remove("table-danger");
+		}
+	}
 }
 
 function carga_botones(objeto, id) {
@@ -227,26 +253,62 @@ function carga_botones(objeto, id) {
 
 function filtra() {
 	// Declare variables
-	var input, filtro, table, tr, td, i, txtValue;
+	var input, filtro, table, tr, td1, td2, i, txtValue1, txtValue2;
 	input = document.getElementById("buscador");
 	filtro = input.value.toUpperCase();
 	table = document.getElementById("combinaciones");
 	tr = table.getElementsByTagName("tr");
-	console.log(table);
 
 	// Loop through all table rows, and hide those who don't match the search query
 	for (i = 0; i < tr.length; i++) {
-		td = tr[i].getElementsByTagName("td")[1];
-		if (td) {
-			txtValue = td.textContent || td.innerText;
-			if (txtValue.toUpperCase().indexOf(filtro) > -1) {
-				tr[i].style.display = "";
+		td1 = tr[i].getElementsByTagName("td")[1];
+		td2 = tr[i].getElementsByTagName("td")[2];
+		if (td1) {
+			txtValue1 = td1.textContent || td1.innerText;
+			txtValue2 = td2.textContent || td2.innerText;
+			if (txtValue1.toUpperCase().indexOf(filtro) > -1 || txtValue2.toUpperCase().indexOf(filtro) > -1) {
+				switch (filtroEstado) {
+				case "Todo":1
+					tr[i].style.display = "";
+					break;
+				case "Activos":
+					if( arrCombi[i-1] instanceof CombiUni && arrCombi[i-1].activo == true) {
+						tr[i].style.display = "";
+					} else if( arrCombi[i-1] instanceof CombiDuo && ( arrCombi[i-1].primerOrdenActivo == true || arrCombi[i-1].segundoOrdenActivo == true )) {
+						tr[i].style.display = "";
+					} else {
+						tr[i].style.display = "none";
+					}
+					break;
+				case "Rechazados":
+					if( arrCombi[i-1] instanceof CombiUni && arrCombi[i-1].activo == false) {
+						tr[i].style.display = "";
+					} else if( arrCombi[i-1] instanceof CombiDuo && ( arrCombi[i-1].primerOrdenActivo == false && arrCombi[i-1].segundoOrdenActivo == false )) {
+						tr[i].style.display = "";
+					} else {
+						tr[i].style.display = "none";
+					}
+					break;
+				}
 			} else {
 				tr[i].style.display = "none";
 			}
 		}
 	}
 }
+
+document.getElementById("filtraTodo").addEventListener('click', function() {
+	filtroEstado = "Todo";
+	filtra();
+})
+document.getElementById("filtraActivos").addEventListener('click', function() {
+	filtroEstado = "Activos";
+	filtra();
+})
+document.getElementById("filtraRechazados").addEventListener('click', function() {
+	filtroEstado = "Rechazados";
+	filtra();
+})
 
 </script>
 
