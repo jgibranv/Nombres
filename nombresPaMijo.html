@@ -23,7 +23,7 @@
 				<br>
 				<input type="text" id="inputNombre" placeholder="Escribe un nombre...">
 				<button id="agregarNombre" class="btn btn-primary btn-sm">Agregar</button>
-			<div id="nombres"></div>
+			<div id="nombres" class="btn-toolbar mb-3"></div>
 		</div>
 	</div>
 </div>
@@ -82,8 +82,8 @@
 <!-- ########################################################################################################################################## -->
 <script type="text/javascript">
 var apellido = "";
-const arrNombres = ["Dante", "Magnus", "Franz", "Marco", "Dominik", "Leo", "Bastian", "Ezzio", "Drakken", "Bjorn", "Anton", "Giovanni", "Luka", "Ander", "Tiago", "Bruno"];
-// const arrNombres = [];
+// const arrNombres = ["Dante", "Magnus", "Franz", "Marco", "Dominik", "Leo", "Bastian", "Ezzio", "Drakken", "Bjorn", "Anton", "Giovanni", "Luka", "Ander", "Tiago", "Bruno"];
+const arrNombres = [];
 arrNombres.sort();
 var filtroEstado = "Todo"; // Valor para utilizar en el filtro de la tabla. Valores: Todo, Activos, Rechazados
 const arrCombi = []; // arreglo en donde se depositan los objetos de que representan todas las combinaciones de los nombres, incluyendo las combinaciones de un nombre
@@ -143,10 +143,13 @@ crea_arreglo_objetos();
 
 // Muestra los nombres en el card
 function muestra_nombres() {
-	stringNombres = arrNombres.join(', ');
-	document.getElementById("nombres").innerHTML = stringNombres;
+	var htmlNombres = "";
+	console.log(htmlNombres);
+	arrNombres.forEach(function(nombre) {
+		htmlNombres += "<div class='input-group'><div class='input-group-text' id='btnGroupAddon'>"+nombre+"</div><button>x</button></div> ";
+	});
+	document.getElementById("nombres").innerHTML = htmlNombres;
 }
-muestra_nombres();
 
 // Pone los nombres en la tabla mientras arregla los renglones correspondientes
 function crea_tabla(tab) {
@@ -385,21 +388,17 @@ document.getElementById("btnApellido").addEventListener('click', function() {
 	alert("Apellido guardado\n"+apellido);
 });
 
-// document.getElementById("agregarNombre").addEventListener('click', function() {
-// 	console.log(document.getElementById("inputNombre").value);
-// });
-
 document.getElementById("agregarNombre").addEventListener('click', agregar_nombre);
 
 function agregar_nombre() {
 	if ( document.getElementById("inputNombre").value ) {
 		var tab = document.getElementById('combinaciones');
 		arrNombres[arrNombres.length] = document.getElementById("inputNombre").value;
+		document.getElementById("inputNombre").value = "";
 		arrNombres.sort();
 		muestra_nombres();
 		crea_arreglo_objetos();
 		tab.getElementsByTagName('tbody')[0].innerHTML = "";
-		console.log(arrCombi);
 		crea_tabla(tab);
 	}
 }
