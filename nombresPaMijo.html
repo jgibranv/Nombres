@@ -58,7 +58,7 @@
 
 			<div class="card">
 				<div class="card card-heading" style="background-color: #34ebc3">
-					Combinaciones
+					Nombres
 				</div>
 				<div class="card-body">
 					<table class="table table-striped table-hover table-bordered" id="combinaciones">
@@ -99,7 +99,7 @@ class CombiUni {
 		this.activo = true;
 	}
 	mostrar() {
-		return this.nombre + apellido;
+		console.log(this.nombre + apellido);
 	}
 }
 // Clase de objetos para las combinaciones de dos nombres
@@ -144,9 +144,8 @@ crea_arreglo_objetos();
 // Muestra los nombres en el card
 function muestra_nombres() {
 	var htmlNombres = "";
-	console.log(htmlNombres);
-	arrNombres.forEach(function(nombre) {
-		htmlNombres += "<div class='input-group'><div class='input-group-text' id='btnGroupAddon'>"+nombre+"</div><button>x</button></div> ";
+	arrNombres.forEach(function(nombre, indice) {
+		htmlNombres += "<div class='input-group'><div class='input-group-text' id='btnGroupAddon'>"+nombre+"</div><button class='btnX' id='btnX"+indice+"'>x</button></div> ";
 	});
 	document.getElementById("nombres").innerHTML = htmlNombres;
 }
@@ -257,7 +256,6 @@ function cambia_estatus_segundo_orden(id) {
 	var id = id.slice(16);
 	arrCombi[id].segundoOrdenActivo ? arrCombi[id].segundoOrdenActivo=false : arrCombi[id].segundoOrdenActivo=true
 	carga_botones(arrCombi[id], id);
-	console.log(document.getElementById("tr"+id));
 
 	// Colorea el renglon si ambos ordenes de la combinacion han sido rechazados
 	if (arrCombi[id].primerOrdenActivo == false && arrCombi[id].segundoOrdenActivo == false ) {
@@ -391,9 +389,12 @@ document.getElementById("btnApellido").addEventListener('click', function() {
 document.getElementById("agregarNombre").addEventListener('click', agregar_nombre);
 
 function agregar_nombre() {
-	if ( document.getElementById("inputNombre").value ) {
+	let nom = document.getElementById("inputNombre").value;
+	if ( nom ) {
+		nom = nom.toLowerCase();
+		nom = nom.charAt(0).toUpperCase() + nom.slice(1);
 		var tab = document.getElementById('combinaciones');
-		arrNombres[arrNombres.length] = document.getElementById("inputNombre").value;
+		arrNombres[arrNombres.length] = nom;
 		document.getElementById("inputNombre").value = "";
 		arrNombres.sort();
 		muestra_nombres();
@@ -402,6 +403,22 @@ function agregar_nombre() {
 		crea_tabla(tab);
 	}
 }
+
+document.getElementById("nombres").addEventListener('click', eliminar_nombre);
+
+function eliminar_nombre(e) {
+	if ( e.target.classList.contains("btnX") ) {
+		let id = e.target.id.slice(4);
+		var tab = document.getElementById('combinaciones');
+		arrNombres[id];
+		arrNombres.splice(id, 1);
+		muestra_nombres();
+		crea_arreglo_objetos();
+		tab.getElementsByTagName('tbody')[0].innerHTML = "";
+		crea_tabla(tab);
+	}
+}
+
 </script>
 
 <!-- JS bundle de Bootstrap -->
